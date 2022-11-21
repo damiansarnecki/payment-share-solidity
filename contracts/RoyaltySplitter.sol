@@ -4,8 +4,8 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract RoyaltySplitter is Ownable {
-    address[] recipients;
-    mapping(address => uint256) percentages;
+    address[] public recipients;
+    mapping(address => uint256) private _percentages;
 
     uint256 immutable _maxRecipients;
     uint256 private _percentageSum = 0;
@@ -57,6 +57,10 @@ contract RoyaltySplitter is Ownable {
         percentages[recipient] = newPercentage;
     }
 
+    function getPercentage(address recipient) external view returns(uint256) {
+        return _percentages[recipient];
+    }
+
     function getRecipientIndex(address recipient)
         public
         view
@@ -74,7 +78,8 @@ contract RoyaltySplitter is Ownable {
             (bool success, ) = address(recipient).call{
                 value: (msg.value * percentages[recipient]) / 100
             }("");
-            require(success, "Transaction reverted");
+
+            require(success, "RoyaltySplitter: Transaction reverted");
         }
     }
 }
