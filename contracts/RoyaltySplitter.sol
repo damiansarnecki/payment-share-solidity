@@ -24,10 +24,10 @@ contract RoyaltySplitter is Ownable {
             "Sum of fee percentages can't be over 100%"
         );
         require(_recipientsCount < _maxRecipients, "Recipient limit reached");
-        require(percentages[recipient] == 0, "Recipient already in array");
+        require(_percentages[recipient] == 0, "Recipient already in array");
 
         recipients.push(recipient);
-        percentages[recipient] = percentage;
+        _percentages[recipient] = percentage;
 
         _percentageSum += percentage;
         _recipientsCount += 1;
@@ -40,7 +40,7 @@ contract RoyaltySplitter is Ownable {
         recipients[recipientIndex] = recipients[recipients.length - 1];
         recipients.pop();
 
-        percentages[recipient] = 0;
+        _percentages[recipient] = 0;
     }
 
     function setPercentage(address recipient, uint256 newPercentage)
@@ -48,38 +48,39 @@ contract RoyaltySplitter is Ownable {
         onlyOwner
     {
         require(
-            _percentageSum + (newPercentage - percentages[recipient]) <= 100,
+            _percentageSum + (newPercentage - _percentages[recipient]) <= 100,
             "Sum of fee percentages can't be over 100%"
         );
         require(newPercentage > 0, "Can't set percentage to 0");
 
-        _percentageSum += (newPercentage - percentages[recipient]);
-        percentages[recipient] = newPercentage;
+        _percentageSum += (newPercentage - _percentages[recipient]);
+        _percentages[recipient] = newPercentage;
     }
 
-    function getPercentage(address recipient) external view returns(uint256) {
+    function getPercentage(address recipient) external view returns (uint256) {
         return _percentages[recipient];
     }
 
-    function getRecipientIndex(address recipient)
-        public
-        view
-        returns (int256)
-    {
+    function getRecipientIndex(address recipient) public view returns (int256) {
         for (uint256 i = 0; i < recipients.length; i++) {
             if (recipients[i] == recipient) return int256(i);
         }
-        return - 1;
+        return -1;
     }
 
     receive() external payable {
         for (uint256 i = 0; i < recipients.length; i++) {
             address recipient = recipients[i];
             (bool success, ) = address(recipient).call{
-                value: (msg.value * percentages[recipient]) / 100
+                value: (msg.value * _percentages[recipient]) / 100
             }("");
 
             require(success, "RoyaltySplitter: Transaction reverted");
         }
+    }
+
+    function withdraw() external onlyOwner {
+        (bool success, ) = address(msg.sender).call{value: address(this).balance}("");
+        require(success, "RoyaltySplitter: Transaction reverted");
     }
 }
