@@ -1,13 +1,3 @@
-# Sample Hardhat Project
+# Royalty Splitter Contract
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
-
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+The ```RoyaltySplitter.sol``` contract stores list of recipients and share percentage that belogns to them. If you register recipients and send Ether to this contract it will be split between sharelholders according to their % amount.
