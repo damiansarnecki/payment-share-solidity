@@ -1,19 +1,19 @@
 import { ethers } from "hardhat";
-import { RoyaltySplitter } from "../../typechain-types/contracts/RoyaltySplitter";
+import { PaymentShare } from "../../typechain-types/contracts/PaymentShare";
 import { TestMarketplace } from "../../typechain-types/contracts/TestMarketplace";
-import { RoyaltySplitter__factory } from "../../typechain-types/factories/contracts/RoyaltySplitter__factory";
+import { PaymentShare__factory } from "../../typechain-types/factories/contracts/PaymentShare__factory";
 import { TestMarketplace__factory } from "../../typechain-types/factories/contracts/TestMarketplace__factory";
 import { DEFAULT_SPLITTER } from "./defaults";
 import { getUsers } from "./setup";
 
 export const deploySplitterFixture = async () => {
-  const RoyaltySplitter = (await ethers.getContractFactory(
-    "RoyaltySplitter"
-  )) as RoyaltySplitter__factory;
+  const PaymentShare = (await ethers.getContractFactory(
+    "PaymentShare"
+  )) as PaymentShare__factory;
 
-  const splitter = (await RoyaltySplitter.deploy(
+  const splitter = (await PaymentShare.deploy(
     DEFAULT_SPLITTER.maxRecipients
-  )) as RoyaltySplitter;
+  )) as PaymentShare;
 
   const signers = await ethers.getSigners();
   await splitter.deployed();
@@ -26,34 +26,35 @@ export const deploySplitterFixture = async () => {
     splitter.address
   )) as TestMarketplace;
 
+  const users = await getUsers();
 
-  return { splitter, signers, marketplace };
+  return { splitter, signers, marketplace, users };
 };
 
 export const deploySplitterWithRecipientsFixture = async () => {
-	const RoyaltySplitter = (await ethers.getContractFactory(
-	  "RoyaltySplitter"
-	)) as RoyaltySplitter__factory;
-  
-	const splitter = (await RoyaltySplitter.deploy(
-	  DEFAULT_SPLITTER.maxRecipients
-	)) as RoyaltySplitter;
-  
-	const users = await getUsers();
-  
-	await splitter.addRecipient(users.UserOne.getAddress(), 30);
-	await splitter.addRecipient(users.UserTwo.getAddress(), 50);
-	await splitter.addRecipient(users.UserThree.getAddress(), 20);
-  
-	await splitter.deployed();
-  
-	const TestMarketplace = (await ethers.getContractFactory(
-	  "TestMarketplace"
-	)) as TestMarketplace__factory;
-  
-	const marketplace = (await TestMarketplace.deploy(
-	  splitter.address
-	)) as TestMarketplace;
-    
-	return { splitter, marketplace };
-  };
+  const PaymentShare = (await ethers.getContractFactory(
+    "PaymentShare"
+  )) as PaymentShare__factory;
+
+  const share = (await PaymentShare.deploy(
+    DEFAULT_SPLITTER.maxRecipients
+  )) as PaymentShare;
+
+  const users = await getUsers();
+
+  await share.addShareholder(users.UserOne.getAddress(), 30);
+  await share.addShareholder(users.UserTwo.getAddress(), 50);
+  await share.addShareholder(users.UserThree.getAddress(), 20);
+
+  await share.deployed();
+
+  const TestMarketplace = (await ethers.getContractFactory(
+    "TestMarketplace"
+  )) as TestMarketplace__factory;
+
+  const marketplace = (await TestMarketplace.deploy(
+    share.address
+  )) as TestMarketplace;
+
+  return { share, marketplace, users };
+};
