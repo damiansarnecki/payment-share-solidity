@@ -89,7 +89,28 @@ describe("RoyaltySplitter", function () {
       ).to.be.revertedWith(REVERT_MESSAGES.paymentShare.zeroPercentage);
     });
   });
+  
   describe("Deleting recipient", () => {
+    describe("getting index", () => {
+      it("should return proper index", async () => {
+        const { splitter, users } = await loadFixture(deploySplitterFixture);
+
+        await splitter.addShareholder(users.UserOne.address, 10);
+        await splitter.addShareholder(users.UserTwo.address, 10);
+
+        expect(await splitter.getShareholderIndex(users.UserOne.address)).to.be.equal(0)
+        expect(await splitter.getShareholderIndex(users.UserTwo.address)).to.be.equal(1)
+
+      })
+      it("should return -1 index for non existent user", async () => {
+        const { splitter, users } = await loadFixture(deploySplitterFixture);
+
+        await splitter.addShareholder(users.UserOne.address, 10);
+       
+        expect(await splitter.getShareholderIndex(users.UserTwo.address)).to.be.equal(-1)
+
+      })
+    })
     describe("by index", () => {
       it("should revert if not owner", async () => {
         const { splitter, users } = await loadFixture(deploySplitterFixture);

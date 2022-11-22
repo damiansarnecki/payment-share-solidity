@@ -16,8 +16,6 @@ export const deploySplitterFixture = async () => {
   const signers = await ethers.getSigners();
   await splitter.deployed();
 
-
-
   const users = await getUsers();
 
   return { splitter, signers, users };
